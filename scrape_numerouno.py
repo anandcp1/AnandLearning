@@ -1,6 +1,7 @@
 import sys
 import requests
 from bs4 import BeautifulSoup
+import json
 
 def scrape_product(url):
     headers = {
@@ -8,7 +9,7 @@ def scrape_product(url):
     }
     response = requests.get(url, headers=headers)
     if response.status_code != 200:
-        print(f"Failed to fetch page: {response.status_code}")
+        print(json.dumps({"error": f"Failed to fetch page: {response.status_code}"}))
         return
     soup = BeautifulSoup(response.text, 'html.parser')
     
@@ -24,13 +25,17 @@ def scrape_product(url):
     img_tag = soup.find('img', class_="wp-post-image")
     img_url = img_tag['src'] if img_tag and img_tag.has_attr('src') else "N/A"
 
-    print("Product Name:", name)
-    print("Price:", price)
-    print("Image URL:", img_url)
+    product_info = {
+        "name": name,
+        "price": price,
+        "image_url": img_url,
+        "url": url
+    }
+    print(json.dumps(product_info, indent=2))
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print("Usage: python scrape_numerouno.py <product_url>")
+        print(json.dumps({"error": "Usage: python scrape_numerouno.py <product_url>"}))
         sys.exit(1)
     product_url = sys.argv[1]
     scrape_product(product_url)
